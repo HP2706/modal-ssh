@@ -34,7 +34,7 @@ pip install -e ".[dev]"
 ```python
 import modal
 from modal import App, Image, Volume
-from modal_ssh import configure_ssh_image, create_ssh_function
+from modal_ssh import configure_ssh_image, ssh_function_wrapper
 
 # Create a Modal app
 app = App(name="my-ssh-app")
