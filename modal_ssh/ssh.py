@@ -1,7 +1,5 @@
-from pathlib import Path
 from modal import Image, App, Volume
 import modal
-from modal.volume import FileEntryType
 import os
 from typing import Optional
 import subprocess
@@ -18,9 +16,9 @@ def maybe_upload_project(
     force_reupload : bool = False
 ):
     if project_dir_name is None:
-        project_dir_name = Path(__file__).parent.name
+        project_dir_name = str(os.path.basename(os.getcwd()))
     if from_path is None:
-        from_path = str(Path(__file__).parent)
+        from_path = os.getcwd()
         
     if volume is None:
         print("creating a new volume 'ssh-volume'")
