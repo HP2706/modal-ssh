@@ -10,10 +10,10 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "User", email = "user@example.com"},
+    {name = "HP", email = "hprjdk@gmail.com"},
 ]
 dependencies = [
-    "modal-client>=0.56.4",
+    "modal>=0.7",
 ]
 
 [project.scripts]
@@ -22,9 +22,6 @@ modal-ssh = "modal_ssh.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = ["modal_ssh"]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
 
 [project.optional-dependencies]
 dev = [
