@@ -6,15 +6,17 @@ import subprocess
 import time
 import signal
 import atexit
-
+from typing import List
+import fnmatch
 
 
 def maybe_upload_project(
     volume : Optional[Volume] = None,
     project_dir_name : Optional[str] = None, # default to name of parent dir
     from_path : Optional[str] = None,
-    force_reupload : bool = False
-):
+    force_reupload : bool = False,
+    ignore_patterns : Optional[List[str]] = ['.venv', 'triton', '*/triton', '*.venv'],
+) -> None:
     if project_dir_name is None:
         project_dir_name = str(os.path.basename(os.getcwd()))
     if from_path is None:
@@ -33,13 +35,25 @@ def maybe_upload_project(
     else:
         print("no data folder", volume.listdir(''))
     
-
-    print("uploading from", from_path)
     with volume.batch_upload(force=force_reupload) as uploader:
-        uploader.put_directory(
-            from_path,
-            remote_path=project_dir_name
-        )
+        for f in os.listdir(from_path):
+            last_name = os.path.basename(f)
+            if ignore_patterns is not None and any(fnmatch.fnmatch(last_name, pattern) for pattern in ignore_patterns):
+                print("ignoring", f)
+                continue
+            
+            if os.path.isdir(f):
+                print("uploading directory", f, "to", os.path.join(project_dir_name, last_name))
+                uploader.put_directory(
+                    os.path.join(from_path, f),
+                    remote_path=os.path.join(project_dir_name, last_name),
+                )
+            else:
+                print("uploading file", f, "to", os.path.join(project_dir_name, last_name))
+                uploader.put_file(
+                    os.path.join(from_path, f),
+                    remote_path=os.path.join(project_dir_name, last_name),
+                )
     
 
 
@@ -69,6 +83,11 @@ def configure_ssh_image(base_image : Optional[Image] = None):
         os.path.expanduser("~/.ssh/id_rsa.pub"), 
         "/root/.ssh/authorized_keys",
         copy=True
+    ).env(
+        {
+            "GIT_USER_NAME": os.environ.get("GIT_USER_NAME", "Default Name"),
+            "GIT_USER_EMAIL": os.environ.get("GIT_USER_EMAIL", "default@example.com")
+        }
     )
 
 def ssh_function_wrapper():
